@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
+	xmlns:int-http="http://www.springframework.org/schema/integration/http"
+	xmlns:int-jmx="http://www.springframework.org/schema/integration/jmx"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration/jmx http://www.springframework.org/schema/integration/jmx/spring-integration-jmx.xsd
+		http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http-4.0.xsd">
+
+	<bean id="safeRestTemplate" class="org.springframework.boot.test.TestRestTemplate" />
+
+	<bean id="jsonMessageConverter"
+		class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter" />
+
+	<bean id="amqpTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+		<constructor-arg ref="rabbitConnectionFactory" />
+		<property name="messageConverter" ref="jsonMessageConverter" />
+	</bean>
+
+	<int-http:inbound-gateway id="httpInboundGateway"
+		request-channel="input" supported-methods="GET,POST,PUT,DELETE" />
+
+	<int-amqp:outbound-gateway request-channel="input"
+		routing-key="${inputQueue}" mapped-request-headers="http_*" />
+
+	<int-http:outbound-gateway request-channel="output"
+		rest-template="safeRestTemplate" http-method-expression="headers.http_requestMethod"
+		url-expression="${urlExpression}" expected-response-type="com.fasterxml.jackson.databind.JsonNode" />
+
+	<int-amqp:inbound-gateway request-channel="output"
+		queue-names="${requestQueue}" mapped-request-headers="http_*" message-converter="jsonMessageConverter" />
+
+</beans>

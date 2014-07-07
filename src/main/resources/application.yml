@@ -1,0 +1,25 @@
+targetUrl: http://localhost:8080
+urlExpression: headers.http_requestUrl.replaceAll('https*://[^/]*','${targetUrl}')
+server.port: 9000
+
+---
+
+spring:
+  profile: server
+requestQueue: output
+inputQueue: input
+ 
+---
+
+spring:
+  profile: default,client
+inputQueue: output
+requestQueue: input
+
+---
+
+spring:
+  profile: test
+requestQueue: input
+inputQueue: input
+  
