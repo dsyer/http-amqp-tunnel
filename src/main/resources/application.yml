@@ -1,25 +1,30 @@
 targetUrl: http://localhost:8080
-urlExpression: headers.http_requestUrl.replaceAll('https*://[^/]*','${targetUrl}')
+urlExpression: headers.http_requestUrl.replaceAll('https*://[^/]*/tunnel','${targetUrl}')
 server.port: 9000
 
 ---
 
 spring:
-  profile: server
-requestQueue: output
-inputQueue: input
+  profiles: default,server
+inboundQueue: server
+outboundQueue: client
  
 ---
 
 spring:
-  profile: default,client
-inputQueue: output
-requestQueue: input
+  profiles: client
+inboundQueue: client
+outboundQueue: server
 
 ---
 
 spring:
-  profile: test
-requestQueue: input
-inputQueue: input
+  profiles: test
+inboundQueue: request
+outboundQueue: request
+
+---
+
+spring:
+  profiles: cloud
   

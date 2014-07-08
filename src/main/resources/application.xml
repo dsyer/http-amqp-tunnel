@@ -19,16 +19,16 @@
 	</bean>
 
 	<int-http:inbound-gateway id="httpInboundGateway"
-		request-channel="input" supported-methods="GET,POST,PUT,DELETE" />
+		request-channel="outbound" supported-methods="GET,POST,PUT,DELETE" />
 
-	<int-amqp:outbound-gateway request-channel="input"
-		routing-key="${inputQueue}" mapped-request-headers="http_*" />
+	<int-amqp:outbound-gateway request-channel="outbound"
+		routing-key="${outboundQueue}" mapped-request-headers="http_*" />
 
-	<int-http:outbound-gateway request-channel="output"
+	<int-http:outbound-gateway request-channel="inbound"
 		rest-template="safeRestTemplate" http-method-expression="headers.http_requestMethod"
 		url-expression="${urlExpression}" expected-response-type="com.fasterxml.jackson.databind.JsonNode" />
 
-	<int-amqp:inbound-gateway request-channel="output"
-		queue-names="${requestQueue}" mapped-request-headers="http_*" message-converter="jsonMessageConverter" />
+	<int-amqp:inbound-gateway request-channel="inbound"
+		queue-names="${inboundQueue}" mapped-request-headers="http_*" message-converter="jsonMessageConverter" />
 
 </beans>
